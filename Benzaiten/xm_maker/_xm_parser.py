@@ -76,6 +76,18 @@ def test2():
         print(note[0].note)
     # print(file.patterns[0].row_data[0][0].note)
 
+def test3():
+    file = XMParser("one_note_blank.xm")
+    print(file.header_size)
+    print(file.song_length)
+    print(file.restart_position)
+    print(file.number_of_channels)
+    print(file.number_of_patterns)
+    print(file.number_of_instruments)
+    print(file.flags)
+    print(file.default_tempo)
+    print(file.default_bpm)
+
 class XMParser(object):
 
     def __init__(self, file):
@@ -201,6 +213,15 @@ class XMParser(object):
     def get_default_bpm(self):
         return self.bytes[78:78+2][0]
 
+# class XMCreator(object):
+#     def __init__(self, file):
+#         self.file = file
+#         self.bytes = None
+#         self.header_size = 336
+
+#     def generate(self):
+#         pass
+
 
 # def _analize():
 
@@ -210,4 +231,4 @@ class XMParser(object):
 #     print(dir)
 
 if __name__ == "__main__":
-    test2()
+    test3()

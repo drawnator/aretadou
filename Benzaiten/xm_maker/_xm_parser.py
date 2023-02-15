@@ -32,7 +32,21 @@ def test1():
         print(bytes[341:341+2],int.from_bytes(bytes[341:341+2], byteorder='little'),"number of rows")
         print(bytes[343:343+2],int.from_bytes(bytes[343:343+2], byteorder='little'),"packed pattern data size")
         #row 1
-        print(bytes[345:345+1],bin(int.from_bytes(bytes[345:345+1], byteorder='little')),"note")
+        print("row1")
+        print(bytes[345:345+1],bin(int.from_bytes(bytes[345:345+1], byteorder='little')),"note value")
+        print(bytes[346:346+1],bin(int.from_bytes(bytes[346:346+1], byteorder='little')),"note")
+        print(bytes[347:347+1],bin(int.from_bytes(bytes[347:347+1], byteorder='little')),"instrument")
+        #row 2
+        print("row2")
+        print(bytes[355:355+1],bin(int.from_bytes(bytes[355:355+1], byteorder='little')),"note value")
+        print(bytes[356:356+1],bin(int.from_bytes(bytes[356:356+1], byteorder='little')),"note")
+        print(bytes[357:357+1],bin(int.from_bytes(bytes[357:357+1], byteorder='little')),"instrument")
+        #row 3
+        print("row3")
+        print(bytes[365:365+1],bin(int.from_bytes(bytes[365:365+1], byteorder='little')),"note value")
+        print(bytes[366:366+1],bin(int.from_bytes(bytes[366:366+1], byteorder='little')),"note")
+        print(bytes[367:367+1],bin(int.from_bytes(bytes[367:367+1], byteorder='little')),"instrument")
+
         #todo transform all int.from_bytes(bytes[345:345+1] into bytes[345:345+1][0]
         # print(bytes[345:345+1],int.from_bytes(bytes[345:345+1], byteorder='little'),bytes[345:345+1][0],bytes[345:345+1])
         # print(bytes[345:345+1],int.from_bytes(bytes[345:345+1], byteorder='little'),"note")
@@ -52,6 +66,15 @@ def test1():
         # print(bytes[354+22:354+22+1],int.from_bytes(bytes[354+22:354+22+1], byteorder='little'),"instrument type")
         # print(bytes[354+23:354+23+2],int.from_bytes(bytes[354+23:354+23+2], byteorder='little'),"number of samples")
 
+def test2():
+    file = XMParser("one_note_blank.xm")
+    # print(file.bytes[336:336+4])
+    print(file.get_number_of_patterns())
+    print(file.patterns[0].number_of_rows)
+    print(file.get_number_of_channels())
+    for note in file.patterns[0].row_data:
+        print(note[0].note)
+    # print(file.patterns[0].row_data[0][0].note)
 
 class XMParser(object):
 
@@ -60,13 +83,22 @@ class XMParser(object):
         self.file = file
         self.bytes = None
         self._parse()
+        self.header_size = self.bytes[60:60+4][0]
+        self.song_length = self.bytes[64:64+2][0]
+        self.restart_position = self.bytes[66:66+2][0]
+        self.number_of_channels = self.bytes[68:68+2][0]
+        self.number_of_patterns = self.bytes[70:70+2][0]
+        self.number_of_instruments = self.bytes[72:72+2][0]
+        self.flags = self.bytes[74:74+2][0]
+        self.default_tempo = self.bytes[76:76+2][0]
+        self.default_bpm = self.bytes[78:78+2][0]
 
     def _parse(self):
         with open(self.file, "rb") as f:
             self.bytes = f.read()
         self.patterns = []
-        for i in range(self.get_number_of_patterns(self.bytes)):
-            self.patterns.append(self.XMpattern(self.bytes, self.pattern_start))
+        for i in range(self.get_number_of_patterns()):
+            self.patterns.append(self.XMpattern(self.bytes, self._pattern_start))
             self._pattern_start = self.patterns[-1].get_offset() + 1
         
 
@@ -98,14 +130,15 @@ class XMParser(object):
             for row in range(self.number_of_rows):
                 for channel in range(self.number_of_channels):
                     self.row_data[row].append(self._get_channel_data())
+                    self._offset += 1
         
         def _get_channel_data(self):
             pattern = self.bytes[self._offset:self._offset+1]
-            note = pattern & 1
-            instrument = pattern & 2
-            volume = pattern & 4
-            effect = pattern & 8
-            effect_parameter = pattern & 16
+            note = pattern[0] & 1
+            instrument = pattern[0] & 2
+            volume = pattern[0] & 4
+            effect = pattern[0] & 8
+            effect_parameter = pattern[0] & 16
             if note:
                 self._offset += 1
                 note = self.bytes[self._offset:self._offset+1]
@@ -170,3 +203,6 @@ class XMParser(object):
 #     import sys
 #     dir = sys.argv[1]
 #     print(dir)
+
+if __name__ == "__main__":
+    test2()

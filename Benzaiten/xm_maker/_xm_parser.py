@@ -113,7 +113,12 @@ class XMParser(object):
             self._parse()
 
         class XMpatternNote(object):
-            def __init__(self, note=b'\x00', instrument=b'\x00', volume=b'\x00', effect=b'\x00', effect_parameter=b'\x00'):
+            def __init__(self,
+                         note=b'\x00',
+                         instrument=b'\x00',
+                         volume=b'\x00',
+                         effect=b'\x00',
+                         effect_parameter=b'\x00'):
                 self.note = note
                 self.instrument = instrument
                 self.volume = volume
@@ -121,10 +126,10 @@ class XMParser(object):
                 self.effect_parameter = effect_parameter
 
         def _parse(self):
-            self.pattern_header_length = int.from_bytes(self.bytes[self._offset:self._offset+4], byteorder='little')
+            self.pattern_header_length = self.bytes[self._offset:self._offset+4][0]
             self.packing_type = 0
-            self.number_of_rows = int.from_bytes(self.bytes[self._offset+5:self._offset+5+2], byteorder='little')
-            self.packed_pattern_data_size = int.from_bytes(self.bytes[self._offset+7:self._offset+7+2], byteorder='little')
+            self.number_of_rows = self.bytes[self._offset+5:self._offset+5+2][0]
+            self.packed_pattern_data_size = self.bytes[self._offset+7:self._offset+7+2][0]
             self._offset += 9
             self.row_data = [[] for i in range(self.number_of_rows)]
             for row in range(self.number_of_rows):
@@ -170,31 +175,31 @@ class XMParser(object):
             
 
     def get_header_size(self):
-        return int.from_bytes(self.bytes[60:60+4], byteorder='little')
+        return self.bytes[60:60+4][0]
 
     def get_song_length(self):
-        return int.from_bytes(self.bytes[64:64+2], byteorder='little')
+        return self.bytes[64:64+2][0]
 
     def get_restart_position(self):
-        return int.from_bytes(self.bytes[66:66+2], byteorder='little')
+        return self.bytes[66:66+2][0]
 
     def get_number_of_channels(self):
-        return int.from_bytes(self.bytes[68:68+2], byteorder='little')
+        return self.bytes[68:68+2][0]
 
     def get_number_of_patterns(self):
-        return int.from_bytes(self.bytes[70:70+2], byteorder='little')
+        return self.bytes[70:70+2][0]
 
     def get_number_of_instruments(self):
-        return int.from_bytes(self.bytes[72:72+2], byteorder='little')
+        return self.bytes[72:72+2][0]
 
     def get_flags(self):
-        return int.from_bytes(self.bytes[74:74+2], byteorder='little')
+        return self.bytes[74:74+2][0]
 
     def get_default_tempo(self):
-        return int.from_bytes(self.bytes[76:76+2], byteorder='little')
+        return self.bytes[76:76+2][0]
 
     def get_default_bpm(self):
-        return int.from_bytes(self.bytes[78:78+2], byteorder='little')
+        return self.bytes[78:78+2][0]
 
 
 # def _analize():

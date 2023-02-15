@@ -1,4 +1,4 @@
-with open("small_1note.xm","rb") as f:
+with open("one_note_blank.xm","rb") as f:
     bytes = f.read()
     print(bytes[0:17]) #ID text "Extended module"
     print(bytes[17:17+20]) #module name 20*"0"
@@ -47,7 +47,7 @@ with open("small_1note.xm","rb") as f:
     print(bytes[359:359+22],int.from_bytes(bytes[359:359+22], byteorder='little'),"instrument name")
     print(bytes[381:381+1],int.from_bytes(bytes[381:381+1], byteorder='little'),"instrument type")
     print(bytes[382:382+2],int.from_bytes(bytes[382:382+2], byteorder='little'),"number of samples")
-    
+
 
 class XMParser(object):
 
@@ -56,11 +56,11 @@ class XMParser(object):
         self.file = file
         self.bytes = None
         self._parse()
-    
+
     def _parse(self):
         with open(self.file, "rb") as f:
             self.bytes = f.read()
-    
+
     def get_pattern(self, pattern_number):
         pattern_index = 0
         local_pattern_start = self.pattern_start
@@ -75,7 +75,7 @@ class XMParser(object):
             self.bytes = bytes
             self.offset = offset
             self._parse()
-        
+
         class XMpatternRow(object):
             def __init__(self, note, instrument, volume, effect, effect_parameter):
                 self.note = note
@@ -83,7 +83,7 @@ class XMParser(object):
                 self.volume = volume
                 self.effect = effect
                 self.effect_parameter = effect_parameter
-        
+
         def _parse(self):
             self.pattern_header_length = int.from_bytes(self.bytes[self.offset:self.offset+4], byteorder='little')
             self.packing_type = 0
@@ -96,17 +96,17 @@ class XMParser(object):
                 volume = self.bytes[self.offset+9+i+2]
                 effect = self.bytes[self.offset+9+i+3]
                 effect_parameter = self.bytes[self.offset+9+i+4]
-                self.packed_pattern_data.append(self.XMpatternRow(note, instrument, volume, effect, effect_parameter)) 
+                self.packed_pattern_data.append(self.XMpatternRow(note, instrument, volume, effect, effect_parameter))
 
     def get_header_size(self):
         return int.from_bytes(self.bytes[60:60+4], byteorder='little')
-    
+
     def get_song_length(self):
         return int.from_bytes(self.bytes[64:64+2], byteorder='little')
-    
+
     def get_restart_position(self):
         return int.from_bytes(self.bytes[66:66+2], byteorder='little')
-    
+
     def get_number_of_channels(self):
         return int.from_bytes(self.bytes[68:68+2], byteorder='little')
 
@@ -118,10 +118,10 @@ class XMParser(object):
 
     def get_flags(self):
         return int.from_bytes(self.bytes[74:74+2], byteorder='little')
-    
+
     def get_default_tempo(self):
         return int.from_bytes(self.bytes[76:76+2], byteorder='little')
-    
+
     def get_default_bpm(self):
         return int.from_bytes(self.bytes[78:78+2], byteorder='little')
 

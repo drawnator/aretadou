@@ -213,15 +213,76 @@ class XMParser(object):
     def get_default_bpm(self):
         return self.bytes[78:78+2][0]
 
-# class XMCreator(object):
-#     def __init__(self, file):
-#         self.file = file
-#         self.bytes = None
-#         self.header_size = 336
+class XMCreator(object):
+    def __init__(self, file):
+        self.file = file
+        self.bytes = None
+        self.header_size = 276
+        self.song_length = 1
+        self.restart_position = 0
+        self.number_of_channels = 8
+        self.number_of_patterns = 0
+        self.number_of_instruments = 1
+        self.flags = 1
+        self.default_tempo = 6
+        self.default_bpm = 125
+        self.patterns = []
 
-#     def generate(self):
-#         pass
+    class XMpattern(object):
+        def __init__(self, number_of_rows, number_of_channels):
+            self.number_of_rows = number_of_rows
+            self.number_of_channels = number_of_channels
+            self.row_data = [[] for i in range(self.number_of_rows)]
+            self.packed_pattern_data_size = 0
+            self.pattern_header_length = 9
 
+        def add_row(self, row):
+            self.row_data.append(row)
+
+        class XMpatternNote(object):
+            def __init__(self,
+                         note=b'\x00',
+                         instrument=b'\x00',
+                         volume=b'\x00',
+                         effect=b'\x00',
+                         effect_parameter=b'\x00'):
+                self.note = note
+                self.instrument = instrument
+                self.volume = volume
+                self.effect = effect
+                self.effect_parameter = effect_parameter
+
+    def add_pattern(self, pattern):
+        self.patterns.append(pattern)
+        self.number_of_patterns += 1
+
+    def generate(self):
+        with open(self.file, "wb") as f:
+            f.write('Extended Module: '.encode('ascii')) # ID text
+            f.write(b'\x00'*20) # Module name
+            f.write(b'\x1a') # EOF
+            f.write('Aretadou encoder 1.0'.encode('ascii')) # Tracker name
+            f.write(b'\x04\x01') # Version
+            f.write(self.header_size.to_bytes(4, byteorder='little')) # Header size
+            f.write(self.song_length.to_bytes(2, byteorder='little')) # Song length
+            f.write(self.restart_position.to_bytes(2, byteorder='little')) # Restart position
+            f.write(self.number_of_channels.to_bytes(2, byteorder='little')) # Number of channels
+            f.write(self.number_of_patterns.to_bytes(2, byteorder='little')) # Number of patterns
+            f.write(self.number_of_instruments.to_bytes(2, byteorder='little')) # Number of instruments
+            f.write(self.flags.to_bytes(2, byteorder='little')) # Flags
+            f.write(self.default_tempo.to_bytes(2, byteorder='little')) # Default tempo
+            f.write(self.default_bpm.to_bytes(2, byteorder='little')) # Default BPM
+            f.write(b'\x00'*256) # Pattern order table
+            f.write(b'\t\x00\x00\x00') #pattern header length
+            f.write(b'\x00') #packing type
+            self.save_patterns(f)
+            self.save_instruments(f)
+
+    def save_patterns(self,f):
+        pass
+
+    def save_instruments(self,f):
+        pass
 
 # def _analize():
 
@@ -231,4 +292,5 @@ class XMParser(object):
 #     print(dir)
 
 if __name__ == "__main__":
-    test3()
+    test1()
+    XMCreator("test.xm").generate()

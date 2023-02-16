@@ -228,16 +228,7 @@ class XMCreator(object):
         self.patterns = []
 
     class XMpattern(object):
-        def __init__(self, number_of_rows, number_of_channels):
-            self.number_of_rows = number_of_rows
-            self.number_of_channels = number_of_channels
-            self.row_data = [[] for i in range(self.number_of_rows)]
-            self.packed_pattern_data_size = 0
-            self.pattern_header_length = 9
 
-        def add_row(self, row, id):
-            self.row_data[id] = row
-        
         class XMpatternNote(object):
             def __init__(self,
                          note=b'\x00',
@@ -251,7 +242,18 @@ class XMCreator(object):
                 self.effect = effect
                 self.effect_parameter = effect_parameter
         
+        def __init__(self, number_of_rows, number_of_channels):
+            self.number_of_rows = number_of_rows
+            self.number_of_channels = number_of_channels
+            self.row_data = [[self.XMpatternNote() for i in range(number_of_channels)] for i in range(self.number_of_rows)]
+            self.packed_pattern_data_size = 0
+            self.header_length = 9
+
+        def add_row(self, row, id):
+            self.row_data[id] = row
+        
         def calculate_packed_pattern_data_size(self):
+            self.packed_pattern_data_size = 0
             for row in self.row_data:
                 for channel in row:
                     self.packed_pattern_data_size += 1
@@ -265,12 +267,19 @@ class XMCreator(object):
                         self.packed_pattern_data_size += 1
                     if channel.effect_parameter != b'\x00':
                         self.packed_pattern_data_size += 1
+            return self.packed_pattern_data_size
+        
+        def transform(self,note_sequence):
+            for i in range(len(note_sequence)):
+                self.row_data[i][0].note = (note_sequence[i] | 48 ).to_bytes(1, byteorder='little')
+                self.row_data[i][0].instrument = b'\x01'
+
 
     def add_pattern(self, pattern):
         self.patterns.append(pattern)
         self.number_of_patterns += 1
 
-    def generate(self):
+    def write(self):
         with open(self.file, "wb") as f:
             f.write('Extended Module: '.encode('ascii')) # ID text
             f.write(b'\x00'*20) # Module name
@@ -294,8 +303,8 @@ class XMCreator(object):
 
     def save_patterns(self,f):
         for pattern in self.patterns:
-            f.write(pattern.header_length.to_bytes(4, byteorder='little')) # Pattern header length
-            f.write(b'\x00') # Packing type
+            # f.write(pattern.header_length.to_bytes(4, byteorder='little')) # Pattern header length
+            # f.write(b'\x00') # Packing type
             f.write(pattern.number_of_rows.to_bytes(2, byteorder='little')) # Number of rows 1..256
             f.write(pattern.calculate_packed_pattern_data_size().to_bytes(2, byteorder='little')) # Packed pattern data size
             for row in pattern.row_data:
@@ -319,4 +328,11 @@ class XMCreator(object):
 
 if __name__ == "__main__":
     test1()
-    XMCreator("test.xm").generate()
+    file = XMCreator("test.xm")
+    music = [1,2,3,4,5,6,7]
+    pattern = file.XMpattern(len(music),8)
+    pattern.transform(music)
+    file.add_pattern(pattern)
+    file.write()
+
+    # print(file.patterns[0].number_of_rows)

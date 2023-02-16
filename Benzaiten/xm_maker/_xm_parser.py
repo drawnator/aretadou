@@ -307,7 +307,6 @@ class XMCreator(object):
                     else:
                         f.write(b'\x80')
             
-
     def save_instruments(self,f):
         pass
 

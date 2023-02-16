@@ -271,8 +271,11 @@ class XMCreator(object):
         
         def transform(self,note_sequence):
             for i in range(len(note_sequence)):
-                self.row_data[i][0].note = (note_sequence[i] | 48 ).to_bytes(1, byteorder='little')
-                self.row_data[i][0].instrument = b'\x01'
+                if note_sequence[i] == 0:
+                    self.row_data[i][0].note = b'\x00'
+                else:
+                    self.row_data[i][0].note = (note_sequence[i] | 48 ).to_bytes(1, byteorder='little')
+                    self.row_data[i][0].instrument = b'\x01'
 
 
     def add_pattern(self, pattern):
@@ -333,7 +336,7 @@ class XMCreator(object):
 if __name__ == "__main__":
     test1()
     file = XMCreator("test.xm")
-    music = [1,2,3,4,5,6,7]
+    music = [1,2,3,4,5,6,7,0,10]
     pattern = file.XMpattern(len(music),8)
     pattern.transform(music)
     file.add_pattern(pattern)

@@ -112,7 +112,6 @@ class XMParser(object):
         for i in range(self.get_number_of_patterns()):
             self.patterns.append(self.XMpattern(self.bytes, self._pattern_start))
             self._pattern_start = self.patterns[-1].get_offset() + 1
-        
 
     def get_patterns(self,pattern_number):
         return self.patterns[pattern_number]
@@ -211,6 +210,7 @@ class XMParser(object):
 
     def get_default_bpm(self):
         return self.bytes[78:78+2][0]
+
 
 class XMCreator(object):
     def __init__(self, file):

@@ -317,7 +317,11 @@ class XMCreator(object):
                         f.write(b'\x80')
             
     def save_instruments(self,f):
-        pass
+        f.write(b'\x1d') # Instrument header length
+        f.write(b'\x00'*3) # Instrument header length
+        f.write(b'\x00'*22) # Instrument name
+        f.write(b'\x00'*1) # Instrument type
+        f.write(b'\x00'*2) # Number of samples
 
 # def _analize():
 

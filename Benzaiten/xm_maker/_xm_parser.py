@@ -183,8 +183,7 @@ class XMParser(object):
             return self.packed_pattern_data_size
         
         def get_offset(self):
-            return self._offset
-            
+            return self._offset       
 
     def get_header_size(self):
         return self.bytes[60:60+4][0]

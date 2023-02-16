@@ -236,9 +236,9 @@ class XMCreator(object):
             self.packed_pattern_data_size = 0
             self.pattern_header_length = 9
 
-        def add_row(self, row):
-            self.row_data.append(row)
-
+        def add_row(self, row, id):
+            self.row_data[id] = row
+        
         class XMpatternNote(object):
             def __init__(self,
                          note=b'\x00',
@@ -251,6 +251,21 @@ class XMCreator(object):
                 self.volume = volume
                 self.effect = effect
                 self.effect_parameter = effect_parameter
+        
+        def calculate_packed_pattern_data_size(self):
+            for row in self.row_data:
+                for channel in row:
+                    self.packed_pattern_data_size += 1
+                    if channel.note != b'\x00':
+                        self.packed_pattern_data_size += 1
+                    if channel.instrument != b'\x00':
+                        self.packed_pattern_data_size += 1
+                    if channel.volume != b'\x00':
+                        self.packed_pattern_data_size += 1
+                    if channel.effect != b'\x00':
+                        self.packed_pattern_data_size += 1
+                    if channel.effect_parameter != b'\x00':
+                        self.packed_pattern_data_size += 1
 
     def add_pattern(self, pattern):
         self.patterns.append(pattern)
@@ -279,7 +294,20 @@ class XMCreator(object):
             self.save_instruments(f)
 
     def save_patterns(self,f):
-        pass
+        for pattern in self.patterns:
+            f.write(pattern.header_length.to_bytes(4, byteorder='little')) # Pattern header length
+            f.write(b'\x00') # Packing type
+            f.write(pattern.number_of_rows.to_bytes(2, byteorder='little')) # Number of rows 1..256
+            f.write(pattern.calculate_packed_pattern_data_size().to_bytes(2, byteorder='little')) # Packed pattern data size
+            for row in pattern.row_data:
+                for channel in row:
+                    if channel.note != b'\x00':
+                        f.write(b'\x83')
+                        f.write(channel.note)
+                        f.write(channel.instrument)
+                    else:
+                        f.write(b'\x80')
+            
 
     def save_instruments(self,f):
         pass
